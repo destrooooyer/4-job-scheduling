@@ -24,11 +24,14 @@ void scheduler()
 	struct jobinfo *newjob=NULL;
 	struct jobcmd cmd;
 	int  count = 0;
+	//清除cmd中的数据
 	bzero(&cmd,DATALEN);
+	//从fifo文件中读取一个作业，放入cmd中
 	if((count=read(fifo,&cmd,DATALEN))<0)
 		error_sys("read fifo failed");
-#ifdef DEBUG
 
+//打印作业信息
+#ifdef DEBUG
 	if(count){
 		printf("cmd cmdtype\t%d\ncmd defpri\t%d\ncmd data\t%s\n",cmd.type,cmd.defpri,cmd.data);
 	}
@@ -36,7 +39,7 @@ void scheduler()
 		printf("no data read\n");
 #endif
 
-	/* 更新等待队列中的作业 */
+	/* 更新等待队列中的作业的等待时间，优先级和正在运行作业的运行时间 */
 	updateall();
 
 	switch(cmd.type){
@@ -72,7 +75,7 @@ void updateall()
 	if(current)
 		current->job->run_time += 1; /* 加1代表1000ms */
 
-	/* 更新作业等待时间及优先级 */
+	/* 更新作业等待时间及优先级,每过5000ms优先级加1 */
 	for(p = head; p != NULL; p = p->next){
 		p->job->wait_time += 1000;
 		if(p->job->wait_time >= 5000 && p->job->curpri < 3){
@@ -143,7 +146,7 @@ void jobswitch()
 		current->job->wait_time = 0;
 		current->job->state = READY;
 
-		/* 放回等待队列 */
+		/* 放回等待队列，放到等待队列的最后 */
 		if(head){
 			for(p = head; p->next != NULL; p = p->next);
 			p->next = current;
@@ -168,18 +171,25 @@ void sig_handler(int sig,siginfo_t *info,void *notused)
 
 	switch (sig) {
 case SIGVTALRM: /* 到达计时器所设置的计时间隔 */
+	//时间片用完，开始一次调度
 	scheduler();
 	return;
 case SIGCHLD: /* 子进程结束时传送给父进程的信号 */
+	//等待任意一个子进程结束，并把结束状态保存在status中
 	ret = waitpid(-1,&status,WNOHANG);
 	if (ret == 0)
 		return;
+	//正常结束返回非0值
 	if(WIFEXITED(status)){
 		current->job->state = DONE;
 		printf("normal termation, exit status = %d\n",WEXITSTATUS(status));
-	}else if (WIFSIGNALED(status)){
+	}
+	//因信号而结束返回真
+	else if (WIFSIGNALED(status)){
 		printf("abnormal termation, signal number = %d\n",WTERMSIG(status));
-	}else if (WIFSTOPPED(status)){
+	}
+	//子进程暂停时返回真
+	else if (WIFSTOPPED(status)){
 		printf("child stopped, signal number = %d\n",WSTOPSIG(status));
 	}
 	return;
@@ -376,7 +386,7 @@ int main()
 		if(remove("/tmp/server")<0)
 			error_sys("remove failed");
 	}
-
+    //创建FIFO文件
 	if(mkfifo("/tmp/server",0666)<0)
 		error_sys("mkfifo failed");
 	/* 在非阻塞模式下打开FIFO */
@@ -384,18 +394,25 @@ int main()
 		error_sys("open fifo failed");
 
 	/* 建立信号处理函数 */
+	//使用sig_handler()函数来响应这些信号
 	newact.sa_sigaction=sig_handler;
 	sigemptyset(&newact.sa_mask);
 	newact.sa_flags=SA_SIGINFO;
+	//进程暂停或中断时产生SIGCHLD信号
 	sigaction(SIGCHLD,&newact,&oldact1);
+	//setitimer函数设置的Virtual Interval Timer超时的时候产生SIGVTALRM
 	sigaction(SIGVTALRM,&newact,&oldact2);
+	/*
+	每当进程因故停下或时间片用完时都要重新调用一次sig_handler()
+	*/
+
 
 	/* 设置时间间隔为1000毫秒 */
 	interval.tv_sec=1;
 	interval.tv_usec=0;
 
-	new.it_interval=interval;
-	new.it_value=interval;
+	new.it_interval=interval;		//指定计时器时间间隔
+	new.it_value=interval;			//指定计时器初始时间
 	setitimer(ITIMER_VIRTUAL,&new,&old);
 
 	while(siginfo==1);
