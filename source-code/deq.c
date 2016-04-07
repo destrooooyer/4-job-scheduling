@@ -21,12 +21,13 @@ int main(int argc,char *argv[])
 	struct jobcmd deqcmd;
 	int fd;
 	
+	//格式错误
 	if(argc!=2)
 	{
 		usage();
 		return 1;
 	}
-
+	//填写作业数据
 	deqcmd.type=DEQ;
 	deqcmd.defpri=0;
 	deqcmd.owner=getuid();

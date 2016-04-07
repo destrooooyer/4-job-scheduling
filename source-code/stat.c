@@ -19,13 +19,13 @@ int main(int argc,char *argv[])
 {
 	struct jobcmd statcmd;
 	int fd;
-
+	//格式错误
 	if(argc!=1)
 	{
 		usage();
 		return 1;
 	}
-
+	//填写作业数据
 	statcmd.type=STAT;
 	statcmd.defpri=0;
 	statcmd.owner=getuid();
