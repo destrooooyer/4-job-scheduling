@@ -45,6 +45,9 @@ struct jobinfo{
     time_t create_time;   /* 作业创建时间 */
     int run_time;         /* 作业运行时间 */
     enum jobstate state;  /* 作业状态 */
+    /************************************/
+    int queuenumber;     //作业队列
+    /************************************/
 };
 
 struct waitqueue{
