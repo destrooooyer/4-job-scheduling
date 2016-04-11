@@ -207,7 +207,7 @@ void updateall()
 	}
 	for (prev = middlehead, p = middlehead; p != NULL;){
 		p->job->wait_time += 1000;
-		if (p->job->wait_time >= 5000){  //切换队列
+		if (p->job->wait_time >= 10000){  //切换队列
 			p->job->curpri++;
 			/*****************************/
 			p->job->queuenumber++;
@@ -247,7 +247,7 @@ void updateall()
 	}
 	for (prev = lowhead, p = lowhead; p != NULL;){
 		p->job->wait_time += 1000;
-		if (p->job->wait_time >= 5000){  //切换队列
+		if (p->job->wait_time >= 10000){  //切换队列
 			p->job->curpri++;
 			/*****************************/
 			p->job->queuenumber++;
