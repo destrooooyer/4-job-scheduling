@@ -410,7 +410,7 @@ void jobswitch()
 				for(p = middlehead; p->next != NULL; p = p->next);
 					p->next = current;
 			}else{
-					/*printf("in\n");*/
+					printf("in\n");
 					middlehead = current;
 			}
 			current->next = NULL;
@@ -698,7 +698,6 @@ void do_deq(struct jobcmd deqcmd)
 
 void do_stat(struct jobcmd statcmd)
 {
-	char temp_str_out[10000] = { 0 };
 	struct waitqueue *p;
 	char timebuf[BUFLEN];
 	/*
@@ -713,19 +712,17 @@ void do_stat(struct jobcmd statcmd)
 	*/
 
 	/* 打印信息头部 */
-	sprintf(temp_str_out, "JOBID\tPID\tOWNER\tRUNTIME\tWAITTIME\tCREATTIME\t\tSTATE\n");
+	printf("JOBID\tPID\tOWNER\tRUNTIME\tWAITTIME\tCREATTIME\t\tSTATE\n");
 	if(current){
-		char temp_str[1000] = {0};
 		strcpy(timebuf,ctime(&(current->job->create_time)));
 		timebuf[strlen(timebuf)-1]='\0';
-		sprintf(temp_str,"%d\t%d\t%d\t%d\t%d\t%s\t%s\n",
+		printf("%d\t%d\t%d\t%d\t%d\t%s\t%s\n",
 			current->job->jid,
 			current->job->pid,
 			current->job->ownerid,
 			current->job->run_time,
 			current->job->wait_time,
 			timebuf,"RUNNING");
-		strcat(temp_str_out, temp_str);
 	}
 
 	// for(p=head;p!=NULL;p=p->next){
@@ -741,11 +738,10 @@ void do_stat(struct jobcmd statcmd)
 	// 		"READY");
 	// }
 /**************************************************************************************************/
-	for (p = highhead; p != NULL; p = p->next){
-		char temp_str[1000] = { 0 };
+	for(p=highhead;p!=NULL;p=p->next){
 		strcpy(timebuf,ctime(&(p->job->create_time)));
 		timebuf[strlen(timebuf)-1]='\0';
-		sprintf(temp_str, "%d\t%d\t%d\t%d\t%d\t%s\t%s\n",
+		printf("%d\t%d\t%d\t%d\t%d\t%s\t%s\n",
 			p->job->jid,
 			p->job->pid,
 			p->job->ownerid,
@@ -753,13 +749,11 @@ void do_stat(struct jobcmd statcmd)
 			p->job->wait_time,
 			timebuf,
 			"READY");
-		strcat(temp_str_out, temp_str);
 	}
-	for (p = middlehead; p != NULL; p = p->next){
-		char temp_str[1000] = { 0 };
+	for(p=middlehead;p!=NULL;p=p->next){
 		strcpy(timebuf,ctime(&(p->job->create_time)));
 		timebuf[strlen(timebuf)-1]='\0';
-		sprintf(temp_str, "%d\t%d\t%d\t%d\t%d\t%s\t%s\n",
+		printf("%d\t%d\t%d\t%d\t%d\t%s\t%s\n",
 			p->job->jid,
 			p->job->pid,
 			p->job->ownerid,
@@ -767,13 +761,11 @@ void do_stat(struct jobcmd statcmd)
 			p->job->wait_time,
 			timebuf,
 			"READY");
-		strcat(temp_str_out, temp_str);
 	}
-	for (p = lowhead; p != NULL; p = p->next){
-		char temp_str[1000] = { 0 };
+	for(p=lowhead;p!=NULL;p=p->next){
 		strcpy(timebuf,ctime(&(p->job->create_time)));
 		timebuf[strlen(timebuf)-1]='\0';
-		sprintf(temp_str, "%d\t%d\t%d\t%d\t%d\t%s\t%s\n",
+		printf("%d\t%d\t%d\t%d\t%d\t%s\t%s\n",
 			p->job->jid,
 			p->job->pid,
 			p->job->ownerid,
@@ -781,7 +773,6 @@ void do_stat(struct jobcmd statcmd)
 			p->job->wait_time,
 			timebuf,
 			"READY");
-		strcat(temp_str_out, temp_str);
 	}
 /**************************************************************************************************/
 
@@ -790,11 +781,11 @@ void do_stat(struct jobcmd statcmd)
 	if ((temp_data_stat = open("/tmp/temp_data_stat", O_WRONLY)) < 0)
 		error_sys("opening failed");
 
-// 	for (int i = 0; i < 100; i++)
-// 		temp_str_out[i] = 'w';
-/*	char a[100] = "23434\n2342342\ndf\ndfgdf\n";*/
-/*	printf("%s", temp_str_out);*/
-	if (write(temp_data_stat,temp_str_out, 10000) < 0)
+	char temp_str_out[100] = { 0 };
+	for (int i = 0; i < 100; i++)
+		temp_str_out[i] = 'w';
+
+	if (write(temp_data_stat,temp_str_out, 200) < 0)
 		error_sys("stat write failed");
 
 	close(temp_data_stat);
